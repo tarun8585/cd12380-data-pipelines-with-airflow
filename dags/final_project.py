@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag
 from airflow.operators.dummy import DummyOperator
+from airflow.utils.dates import days_ago
 from operators import (StageToRedshiftOperator, LoadFactOperator,
                        LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
@@ -8,9 +9,10 @@ from helpers import SqlQueries
 default_args = {
     'owner': 'udacity',
     "depends_on_past": False,
-    'start_date': datetime(2024, 1, 1),
+    "start_date": days_ago(1),
     "retries": 3,
     "retry_delay": timedelta(minutes=5),
+    "email_on_retry": False,
     "catchup": False
 }
 

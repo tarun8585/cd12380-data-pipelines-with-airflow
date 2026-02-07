@@ -17,7 +17,7 @@ default_args = {
 @dag(
     default_args=default_args,
     description='Load and transform data in Redshift with Airflow',
-    schedule_interval='0 * * * *',
+    schedule_interval='0 * * * *', # Dag scheduled hourly
     max_active_runs=1
 )
 

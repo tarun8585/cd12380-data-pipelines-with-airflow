@@ -17,14 +17,14 @@ default_args = {
 @dag(
     default_args=default_args,
     description='Load and transform data in Redshift with Airflow',
-    schedule_interval="@hourly",
+    schedule_interval='0 * * * *',
     max_active_runs=1
 )
 
 def final_project():
 
-    start_operator = DummyOperator(task_id='start_execution')
-    end_operator = DummyOperator(task_id='end_execution')
+    start_operator = DummyOperator(task_id='Begin_execution')
+    end_operator = DummyOperator(task_id='End_execution')
 
     stage_events_to_redshift = StageToRedshiftOperator(
         task_id="Stage_events",
@@ -32,7 +32,7 @@ def final_project():
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
         s3_bucket="{{ var.value.s3_bucket }}",
-        s3_key="{{ var.value.s3_prefix }}/log_data",
+        s3_key="{{ var.value.s3_prefix }}",
         json_format="s3://udacity-dend/log_json_path.json"
     )
 

@@ -5,6 +5,7 @@ from airflow.utils.decorators import apply_defaults
 class LoadFactOperator(BaseOperator):
 
     ui_color = '#F98866'
+    template_fields = ("sql_statement",)
 
     @apply_defaults
     def __init__(self,

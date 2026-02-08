@@ -21,9 +21,9 @@ class LoadDimensionOperator(BaseOperator):
         self.sql_statement = sql_statement
         self.mode = mode
 
+    # Added option of truncate-insert if needed, Had to validate the data freshly in rerun scenarios.
     def execute(self, context):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
-
         if self.mode == "truncate-insert":
             self.log.info(f"Clearing data from dimension table --> {self.table}")
             redshift.run(f"DELETE FROM {self.table}")

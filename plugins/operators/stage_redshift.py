@@ -8,6 +8,7 @@ class StageToRedshiftOperator(BaseOperator):
     ui_color = '#358140'
     template_fields = ("s3_bucket", "s3_key", "json_format")
 
+    # Added configurable options to ensure it is not hardcoded.
     copy_sql = """
         COPY {table}
         FROM '{s3_path}'
@@ -37,12 +38,9 @@ class StageToRedshiftOperator(BaseOperator):
 
     def execute(self, context):
         self.log.info(f"Staging {self.table} from S3 to Redshift")
-
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         aws = BaseHook.get_connection(self.aws_credentials_id)
-
         s3_path = f"s3://{self.s3_bucket}/{self.s3_key}"
-
         formatted_sql = StageToRedshiftOperator.copy_sql.format(
             table=self.table,
             s3_path=s3_path,
@@ -50,7 +48,6 @@ class StageToRedshiftOperator(BaseOperator):
             secret_key=aws.password,
             json_format=self.json_format
         )
-
         self.log.info(f"Running COPY command for table --->  {self.table}")
         redshift.run(formatted_sql)
         self.log.info(f"Finished staging table --->  {self.table}")

@@ -1,6 +1,7 @@
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
+from airflow.exceptions import AirflowException
 
 class DataQualityOperator(BaseOperator):
 
@@ -20,9 +21,17 @@ class DataQualityOperator(BaseOperator):
     def execute(self, context):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         for table in self.tables:
-            self.log.info(f"Running data quality check on table -->  {table}")
-            records = redshift.get_records(f"SELECT COUNT(*) FROM {table}")
-            # Check if query returned rows .
-            # If the data is not populated, failing the Data Quality step with the value error.
-            if len(records) < 1 or len(records[0]) < 1:
-                raise ValueError(f"Data quality check failed: {table} returned no results")
+            self.log.info(f"Running data quality check on table: {table}")
+            records = redshift.get_records(f"SELECT COUNT(*) FROM {table};")
+            # Check that we got a result at all
+            if not records or not records[0] or records[0][0] is None:
+                error_msg = f"Data quality check failed. No results returned for table {table}."
+                self.log.error(error_msg)
+                raise AirflowException(error_msg)
+            count = records[0][0]
+            # Check that the table is not empty
+            if count == 0:
+                error_msg = f"Data quality check failed. Table {table} returned 0 rows."
+                self.log.error(error_msg)
+                raise AirflowException(error_msg)
+            self.log.info(f"Data quality check passed for table {table}. Row count: {count}")
